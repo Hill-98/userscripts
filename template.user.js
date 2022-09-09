@@ -2,7 +2,7 @@
 // @name        template
 // @namespace   Hill98
 // @description template
-// @version     1.1.0
+// @version     1.0.0
 // @author      Hill-98
 // @license     MIT
 // @icon        none

@@ -17,17 +17,17 @@
 const usp = new URLSearchParams(location.search);
 let pfurl = usp.get('pfurl');
 if (pfurl !== null) {
-    pfurl = pfurl.match(/^https?:\/\//) === null ? `http://${pfurl}` : pfurl;
-    const meta = document.createElement('meta');
-    meta.content = `0; url='${pfurl}'`;
-    meta.httpEquiv = 'refresh';
-    document.head.innerHTML = meta.outerHTML;
-    const tips = document.createElement('p');
-    tips.style.fontSize = '2rem';
-    tips.textContent = 'If there is no jump. ';
-    const tipsLink = document.createElement('a');
-    tipsLink.href = pfurl;
-    tipsLink.textContent = 'click here';
-    tips.append(tipsLink);
-    document.body.innerHTML = tips.outerHTML;
+  pfurl = pfurl.match(/^https?:\/\//) === null ? `http://${pfurl}` : pfurl;
+  const meta = document.createElement('meta');
+  meta.content = `0; url='${pfurl}'`;
+  meta.httpEquiv = 'refresh';
+  document.head.innerHTML = meta.outerHTML;
+  const tips = document.createElement('p');
+  tips.style.fontSize = '2rem';
+  tips.textContent = 'If there is no jump. ';
+  const tipsLink = document.createElement('a');
+  tipsLink.href = pfurl;
+  tipsLink.textContent = 'click here';
+  tips.append(tipsLink);
+  document.body.innerHTML = tips.outerHTML;
 }

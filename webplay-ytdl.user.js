@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name        WebPlay for ytdl
 // @namespace   Hill98
-// @description WebPlay for ytdl
-// @version     1.0.0
+// @description Show WebPlay play button on some ytdl protocol supported pages
+// @version     1.0.1
 // @author      Hill-98
 // @license     MIT
 // @icon        none
@@ -23,6 +23,7 @@ style.innerHTML = `
   background: linear-gradient(to right, #7f7fd5, #86a8e7, #91eae4);
   border-color: rgba(0, 0, 0, 0.2);
   color: #f1f2f3;
+  cursor: pointer;
   font-size: 1rem;
   position: fixed;
   top: 0px;
@@ -34,10 +35,11 @@ style.innerHTML = `
 const playButton = document.createElement('button');
 playButton.classList.add('play-button');
 playButton.textContent = '▶ WebPlay';
-playButton.title = 'Play with local player';
+playButton.title = 'Double click to hide';
 playButton.addEventListener('click', () => {
   clearTimeout(Number(playButton.dataset.timer));
   playButton.dataset.timer = setTimeout(() => {
+    delete playButton.dataset.timer;
     const params = new URLSearchParams();
     const video = document.querySelector('video');
     params.append('link', window.location.href);
@@ -46,8 +48,8 @@ playButton.addEventListener('click', () => {
       params.append('start', video.currentTime);
     }
     const url = 'webplay:?' + params.toString();
-    window.location.href = url;
-    delete playButton.dataset.timer;
+    location.assign(url);
+    video.pause();
   }, 250);
 });
 playButton.addEventListener('dblclick', () => {
@@ -58,7 +60,7 @@ playButton.addEventListener('dblclick', () => {
 const container = document.createElement('div');
 container.id = 'webplay-ytdl-' + Number.parseInt(Math.random() * 100);
 
-const shadow = container.attachShadow({ mode: 'closed' });
+const shadow = container.attachShadow({ mode: 'open' });
 shadow.append(style);
 shadow.append(playButton);
 

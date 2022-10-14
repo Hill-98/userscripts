@@ -2,10 +2,10 @@
 // @name        WebPlay for ytdl
 // @namespace   Hill98
 // @description Show WebPlay play button on some ytdl protocol supported pages
-// @version     1.0.1
+// @version     1.0.2
 // @author      Hill-98
 // @license     MIT
-// @icon        none
+// @icon        https://www.google.com/s2/favicons?domain=mpv.io
 // @downloadURL https://github.com/Hill-98/userscripts/raw/main/webplay-ytdl.user.js
 // @homepageURL https://github.com/Hill-98/userscripts
 // @supportURL  https://github.com/Hill-98/userscripts/issues
@@ -42,7 +42,7 @@ playButton.addEventListener('click', () => {
     delete playButton.dataset.timer;
     const params = new URLSearchParams();
     const video = document.querySelector('video');
-    params.append('link', window.location.href);
+    params.append('url', window.location.href);
     params.append('parse', 1);
     if (video !== null) {
       params.append('start', video.currentTime);

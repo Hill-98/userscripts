@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.1
+// @version     1.1.2
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -66,7 +66,7 @@ const handleReplies = function handleReplies(replies) {
 };
 
 const handleResponse = function handleResponse(url, response) {
-  if (!url.startsWith('https://api.bilibili.com/x/v2/reply/main')) {
+  if (!url.startsWith('https://api.bilibili.com/x/v2/reply')) {
     return;
   }
   try {
@@ -102,7 +102,7 @@ const jsonpObserver = new MutationObserver((mutationList) => {
         return;
       }
       const u = new URL(node.src);
-      if (u.href.startsWith('https://api.bilibili.com/x/v2/reply/main')) {
+      if (u.href.startsWith('https://api.bilibili.com/x/v2/reply')) {
         const callbackName = u.searchParams.get('callback');
         const callback = window[callbackName];
         window[callbackName] = function (data) {

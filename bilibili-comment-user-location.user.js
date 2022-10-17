@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.0.1
+// @version     1.1.0
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -19,32 +19,45 @@ const LOG_PREFIX = '[bcul]: ';
 
 const console = Object.create(Object.getPrototypeOf(window.console), Object.getOwnPropertyDescriptors(window.console));
 
-const addLocationToReply = function addLocationToReply(id, userid, location) {
+const addLocationToReply = function addLocationToReply(rootid, rpid, userid, location) {
   const el = document.createElement('span');
   el.classList.add('reply-location')
-  el.style.marginLeft = '18px';
   el.textContent = location;
-  const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userid}"]`);
-  containers.forEach((container) => {
-    let parentElement = container.parentElement;
-    const isSub = parentElement.classList.toString().includes('sub-');
-    if (isSub) {
-      parentElement = parentElement.parentElement;
+  if (window.location.pathname.startsWith('/bangumi/play/')) {
+    // 影视页面
+    const container = document.querySelector(`.reply-wrap[data-id="${rpid}"]`);
+    const info = container.querySelector('.info');
+    info.append(el);
+  } else {
+    // 视频页面
+    const id = rootid === 0 ? rpid : rootid;
+    const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userid}"]`);
+    for (let i = 0; i < containers.length; i++) {
+      const container = containers[i];
+      let parentElement = container.parentElement;
+      const isSub = parentElement.classList.toString().includes('sub-');
+      if (isSub) {
+        parentElement = parentElement.parentElement;
+      }
+      const info = parentElement.querySelector(isSub ? '.sub-reply-info' : '.reply-info');
+      if (info && !info.querySelector('.reply-location')) {
+        el.style.marginLeft = '18px';
+        info.append(el);
+        break;
+      }
     }
-    const info = parentElement.querySelector(isSub ? '.sub-reply-info' : '.reply-info');
-    if (info && !info.querySelector('.reply-location')) {
-      info.append(el);
-    }
-  });
+  }
 }
 
 const handleReplies = function handleReplies(replies) {
   replies.forEach((reply) => {
-    const userid = reply.mid;
-    const rootid = reply.root === 0 ? reply.rpid : reply.root;
     const control = reply.reply_control;
     if (control?.location) {
-      addLocationToReply(rootid, userid, control.location);
+      try {
+        addLocationToReply(reply.root, reply.rpid, reply.mid, control.location);
+      } catch (ex) {
+        console.error(LOG_PREFIX, ex);
+      }
     }
     if (reply.replies) {
       handleReplies(reply.replies);
@@ -78,3 +91,28 @@ window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest
     this.addEventListener('readystatechange', hackResponse.bind(this));
   }
 };
+
+const jsonpObserver = new MutationObserver((mutationList) => {
+  mutationList.forEach((mutation) => {
+    mutation.addedNodes.forEach((node) => {
+      if (node.nodeName.toLowerCase() !== 'script') {
+        return;
+      }
+      const u = new URL(node.src);
+      if (u.href.startsWith('https://api.bilibili.com/x/v2/reply')) {
+        const callbackName = u.searchParams.get('callback');
+        const callback = window[callbackName];
+        window[callbackName] = function (data) {
+          handleResponse(u.href, JSON.stringify(data));
+          callback(data);
+        };
+      }
+    });
+  });
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  jsonpObserver.observe(document.head, {
+    childList: true,
+  });
+});

@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.0
+// @version     1.1.1
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -20,18 +20,18 @@ const LOG_PREFIX = '[bcul]: ';
 const console = Object.create(Object.getPrototypeOf(window.console), Object.getOwnPropertyDescriptors(window.console));
 
 const addLocationToReply = function addLocationToReply(rootid, rpid, userid, location) {
+  const id = rootid === 0 ? rpid : rootid;
   const el = document.createElement('span');
   el.classList.add('reply-location')
   el.textContent = location;
-  if (window.location.pathname.startsWith('/bangumi/play/')) {
-    // 影视页面
-    const container = document.querySelector(`.reply-wrap[data-id="${rpid}"]`);
+  const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userid}"]`);
+  const container = document.querySelector(`.reply-wrap[data-id="${rpid}"]`);
+  if (container) {
+    // old page
     const info = container.querySelector('.info');
     info.append(el);
   } else {
-    // 视频页面
-    const id = rootid === 0 ? rpid : rootid;
-    const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userid}"]`);
+    // new page
     for (let i = 0; i < containers.length; i++) {
       const container = containers[i];
       let parentElement = container.parentElement;
@@ -66,13 +66,16 @@ const handleReplies = function handleReplies(replies) {
 };
 
 const handleResponse = function handleResponse(url, response) {
-  if (!url.startsWith('https://api.bilibili.com/x/v2/reply')) {
+  if (!url.startsWith('https://api.bilibili.com/x/v2/reply/main')) {
     return;
   }
   try {
     const json = JSON.parse(response);
-    if (json.code === 0 && json.data?.replies) {
-      setTimeout(handleReplies.bind(this, json.data.replies), 1000);
+    if (json.code === 0) {
+      setTimeout(() => {
+        handleReplies(json.data.replies ?? []);
+        handleReplies(json.data.top_replies ?? []);
+      }, 1000);
     }
   } catch (ex) {
     console.error(LOG_PREFIX, ex);
@@ -99,7 +102,7 @@ const jsonpObserver = new MutationObserver((mutationList) => {
         return;
       }
       const u = new URL(node.src);
-      if (u.href.startsWith('https://api.bilibili.com/x/v2/reply')) {
+      if (u.href.startsWith('https://api.bilibili.com/x/v2/reply/main')) {
         const callbackName = u.searchParams.get('callback');
         const callback = window[callbackName];
         window[callbackName] = function (data) {

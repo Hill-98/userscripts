@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.0.0
+// @version     1.0.1
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -17,7 +17,7 @@
 
 const LOG_PREFIX = '[bcul]: ';
 
-const console = Object.assign({}, Object.getOwnPropertyDescriptors(window.console));
+const console = Object.create(Object.getPrototypeOf(window.console), Object.getOwnPropertyDescriptors(window.console));
 
 const addLocationToReply = function addLocationToReply(id, userid, location) {
   const el = document.createElement('span');
@@ -66,15 +66,15 @@ const handleResponse = function handleResponse(url, response) {
   }
 };
 
-window.XMLHttpRequest = class XMLHttpRequestHacker extends XMLHttpRequest {
+const hackResponse = function hackResponse() {
+  if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+    handleResponse(this.responseURL, this.response);
+  }
+};
+
+window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest {
   constructor() {
     super();
-    this.addEventListener('readystatechange', this.hackResponse);
-  }
-
-  hackResponse() {
-    if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-      handleResponse(this.responseURL, this.response);
-    }
+    this.addEventListener('readystatechange', hackResponse.bind(this));
   }
 };

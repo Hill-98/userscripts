@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.2
+// @version     1.1.3
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -12,6 +12,8 @@
 // @updateURL   https://github.com/Hill-98/userscripts/raw/main/bilibili-comment-user-location.user.js
 // @grant       none
 // @match       https://www.bilibili.com/*
+// @match       https://space.bilibili.com/*
+// @match       https://t.bilibili.com/*
 // @run-at      document-start
 // ==/UserScript==
 
@@ -29,7 +31,12 @@ const addLocationToReply = function addLocationToReply(rootid, rpid, userid, loc
   if (container) {
     // old page
     const info = container.querySelector('.info');
-    info.append(el);
+    const tags = container.querySelector('.reply-tags');
+    if (tags) {
+      info.insertBefore(el, tags);
+    } else {
+      info.append(el);
+    }
   } else {
     // new page
     for (let i = 0; i < containers.length; i++) {
@@ -98,7 +105,7 @@ window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest
 const jsonpObserver = new MutationObserver((mutationList) => {
   mutationList.forEach((mutation) => {
     mutation.addedNodes.forEach((node) => {
-      if (node.nodeName.toLowerCase() !== 'script') {
+      if (node.nodeName.toLowerCase() !== 'script' || node.src.trim() === '') {
         return;
       }
       const u = new URL(node.src);

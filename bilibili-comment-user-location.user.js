@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.3
+// @version     1.1.4
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -11,9 +11,14 @@
 // @supportURL  https://github.com/Hill-98/userscripts/issues
 // @updateURL   https://github.com/Hill-98/userscripts/raw/main/bilibili-comment-user-location.user.js
 // @grant       none
+// 主站
 // @match       https://www.bilibili.com/*
+// 直播 (直播间底部的主播动态)
+// @match       https://live.bilibili.com/*
+// 用户详情页
 // @match       https://space.bilibili.com/*
-// @match       https://t.bilibili.com/*
+// 动态
+// @match       https://t.bilibili.com/
 // @run-at      document-start
 // ==/UserScript==
 
@@ -24,7 +29,7 @@ const console = Object.create(Object.getPrototypeOf(window.console), Object.getO
 const addLocationToReply = function addLocationToReply(rootid, rpid, userid, location) {
   const id = rootid === 0 ? rpid : rootid;
   const el = document.createElement('span');
-  el.classList.add('reply-location')
+  el.classList.add('reply-location');
   el.textContent = location;
   const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userid}"]`);
   const container = document.querySelector(`.reply-wrap[data-id="${rpid}"]`);
@@ -54,7 +59,7 @@ const addLocationToReply = function addLocationToReply(rootid, rpid, userid, loc
       }
     }
   }
-}
+};
 
 const handleReplies = function handleReplies(replies) {
   replies.forEach((reply) => {

@@ -2,9 +2,9 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.4
+// @version     1.1.5
 // @author      Hill-98
-// @license     MIT
+// @license     GPL-3.0
 // @icon        https://www.bilibili.com/favicon.ico
 // @downloadURL https://github.com/Hill-98/userscripts/raw/main/bilibili-comment-user-location.user.js
 // @homepageURL https://github.com/Hill-98/userscripts
@@ -22,7 +22,7 @@
 // @run-at      document-start
 // ==/UserScript==
 
-const LOG_PREFIX = '[bcul]: ';
+const API_PREFIX = 'https://api.bilibili.com/x/v2/reply';
 
 const console = Object.create(Object.getPrototypeOf(window.console), Object.getOwnPropertyDescriptors(window.console));
 
@@ -68,7 +68,7 @@ const handleReplies = function handleReplies(replies) {
       try {
         addLocationToReply(reply.root, reply.rpid, reply.mid, control.location);
       } catch (ex) {
-        console.error(LOG_PREFIX, ex);
+        console.error(ex);
       }
     }
     if (reply.replies) {
@@ -78,7 +78,7 @@ const handleReplies = function handleReplies(replies) {
 };
 
 const handleResponse = function handleResponse(url, response) {
-  if (!url.startsWith('https://api.bilibili.com/x/v2/reply')) {
+  if (!url.startsWith(API_PREFIX)) {
     return;
   }
   try {
@@ -90,7 +90,7 @@ const handleResponse = function handleResponse(url, response) {
       }, 1000);
     }
   } catch (ex) {
-    console.error(LOG_PREFIX, ex);
+    console.error(ex);
   }
 };
 
@@ -114,7 +114,7 @@ const jsonpObserver = new MutationObserver((mutationList) => {
         return;
       }
       const u = new URL(node.src);
-      if (u.href.startsWith('https://api.bilibili.com/x/v2/reply')) {
+      if (u.href.startsWith(API_PREFIX)) {
         const callbackName = u.searchParams.get('callback');
         const callback = window[callbackName];
         window[callbackName] = function (data) {

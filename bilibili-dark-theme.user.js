@@ -1,0 +1,58 @@
+// ==UserScript==
+// @name        Bilibili dark theme
+// @namespace   Hill98
+// @description Enable dark theme for Bilibili
+// @version     1.0.0
+// @author      Hill-98
+// @license     MIT
+// @icon        https://www.bilibili.com/favicon.ico
+// @downloadURL https://github.com/Hill-98/userscripts/raw/main/bilibili-dark-theme.user.js
+// @homepageURL https://github.com/Hill-98/userscripts
+// @supportURL  https://github.com/Hill-98/userscripts/issues
+// @updateURL   https://github.com/Hill-98/userscripts/raw/main/bilibili-dark-theme.user.js
+// @grant       GM_getValue
+// @grant       GM_setValue
+// @match       https://www.bilibili.com/
+// @match       https://www.bilibili.com/video/*
+// @match       https://live.bilibili.com/*
+// @match       https://search.bilibili.com/*
+// @run-at      document-start
+// ==/UserScript==
+
+// Force Enable: window.darkThemeForceEnable = true
+
+const addStyle = function addStyle(forceEnable) {
+  const id = 'bilibili-dark-theme';
+  const style = document.createElement('style');
+  style.id = id;
+  style.innerHTML = `
+@import url("https://s1.hdslb.com/bfs/static/jinkela/long/laputa-css/dark.css") ${forceEnable ? '' : '(prefers-color-scheme: dark)'};
+
+@media ${forceEnable ? '' : '(prefers-color-scheme: dark)'} {
+  .reply-tag-item {
+    background-color: var(--bg3) !important;
+    color: var(--text2) !important;
+  }
+}
+`;
+  document.getElementById(id)?.remove();
+  document.body.append(style);
+};
+
+Object.defineProperty(unsafeWindow, 'darkThemeForceEnable', {
+  enumerable: true,
+  get() {
+    return GM_getValue('force-enable', false);
+  },
+  set(value) {
+    const v = Boolean(value);
+    GM_setValue('force-enable', v);
+    addStyle(v);
+  },
+});
+
+document.querySelector('html').style.display = 'none';
+document.addEventListener('DOMContentLoaded', () => {
+  addStyle(unsafeWindow.darkThemeForceEnable);
+  document.querySelector('html').style.display = '';
+});

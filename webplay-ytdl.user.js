@@ -2,7 +2,7 @@
 // @name        WebPlay for ytdl
 // @namespace   Hill98
 // @description Show WebPlay play button on some ytdl protocol supported pages
-// @version     1.0.2
+// @version     1.0.3
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.google.com/s2/favicons?domain=mpv.io
@@ -12,6 +12,7 @@
 // @updateURL   https://github.com/Hill-98/userscripts/raw/main/webplay-ytdl.user.js
 // @grant       none
 // @match       https://space.bilibili.com/*/channel/collectiondetail?*
+// @match       https://www.bilibili.com/bangumi/play/*
 // @match       https://www.bilibili.com/video/*
 // @match       https://www.youtube.com/watch?*
 // @match       https://www.youtube.com/playlist?*

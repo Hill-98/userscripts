@@ -2,7 +2,7 @@
 // @name        WebPlay for ytdl
 // @namespace   Hill98
 // @description Show WebPlay play button on some ytdl protocol supported pages
-// @version     1.1.0
+// @version     1.1.1
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.google.com/s2/favicons?domain=mpv.io
@@ -2140,48 +2140,31 @@
 // ==/UserScript==
 
 const style = document.createElement('style');
-style.innerHTML = `
-@keyframes slide-left {
-  from {
-    right: -80px;
-  }
-
-  to {
-    right: 0;
-  }
-}
-
-@keyframes slide-right {
-  from {
-    right: 0;
-  }
-
-  to {
-    right: -80px;
-  }
-}
-
+style.innerHTML = /*css*/`
 .play-button {
-  animation: 0.5s ease-in 0.3s slide-right forwards;
   background: linear-gradient(to right, #7f7fd5, #86a8e7, #91eae4);
   border-color: rgba(0, 0, 0, 0.2);
   color: #f1f2f3;
   cursor: pointer;
   font-family: Arial;
   font-size: 18px;
+  opacity: 0.7;
   position: fixed;
   top: 8vh;
-  right: 0;
+  transition: opacity 0s ease-in 0.8s, right 0.5s ease-in 0.3s;
+  right: -80px;
   z-index: 99999;
 }
 
-.play-button:hover {
-  animation: 0.5s ease-in slide-left forwards;
+.play-button_init, .play-button:hover {
+  opacity: 1;
+  transition-delay: 0s;
+  right: 0;
 }
 `;
 
 const playButton = document.createElement('button');
-playButton.classList.add('play-button');
+playButton.classList.add('play-button_init', 'play-button');
 playButton.textContent = '▶ WebPlay';
 playButton.title = 'Double click to hide';
 playButton.addEventListener('click', () => {
@@ -2191,14 +2174,13 @@ playButton.addEventListener('click', () => {
     const params = new URLSearchParams();
     const video = document.querySelector('video');
     params.append('url', window.location.href);
-    params.append('parse', 1);
+    params.append('parse', '1');
     if (video !== null) {
       params.append('start', video.currentTime);
     }
-    const url = 'webplay:?' + params.toString();
-    location.assign(url);
+    location.assign('webplay:?' + params.toString());
     video.pause();
-  }, 250);
+  }, 300);
 });
 playButton.addEventListener('dblclick', () => {
   clearTimeout(Number(playButton.dataset.timer));
@@ -2207,13 +2189,13 @@ playButton.addEventListener('dblclick', () => {
 
 const container = document.createElement('div');
 container.id = 'webplay-ytdl-' + Number.parseInt(Math.random() * 100);
-
 const shadow = container.attachShadow({ mode: 'closed' });
 shadow.append(style);
 shadow.append(playButton);
-
 document.body.append(container);
 
 document.addEventListener('fullscreenchange', () => {
-  playButton.style.opacity = document.fullscreenElement ? '0' : '1';
+  container.style.display = document.fullscreenElement ? 'none' : '';
 });
+
+setTimeout(playButton.classList.remove.bind(playButton.classList, 'play-button_init'), 1000);

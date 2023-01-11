@@ -2139,6 +2139,17 @@
 // @match *://shooshtime.com/*
 // ==/UserScript==
 
+const languages = {
+  'en-US': {
+    PLAY_BUTTON_TITLE: 'Double click to hide',
+  },
+  'zh-CN': {
+    PLAY_BUTTON_TITLE: '双击隐藏',
+  },
+};
+
+const localization = languages[navigator.language] || languages['en-US'];
+
 const style = document.createElement('style');
 style.innerHTML = /*css*/`
 .play-button {
@@ -2166,7 +2177,7 @@ style.innerHTML = /*css*/`
 const playButton = document.createElement('button');
 playButton.classList.add('play-button_init', 'play-button');
 playButton.textContent = '▶ WebPlay';
-playButton.title = 'Double click to hide';
+playButton.title = localization.PLAY_BUTTON_TITLE;
 playButton.addEventListener('click', () => {
   clearTimeout(Number(playButton.dataset.timer));
   playButton.dataset.timer = setTimeout(() => {

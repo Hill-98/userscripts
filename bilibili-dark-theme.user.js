@@ -2,7 +2,7 @@
 // @name        Bilibili dark theme
 // @namespace   Hill98
 // @description Enable dark theme for Bilibili
-// @version     1.0.0
+// @version     1.0.1
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -12,6 +12,7 @@
 // @updateURL   https://github.com/Hill-98/userscripts/raw/main/bilibili-dark-theme.user.js
 // @grant       GM_getValue
 // @grant       GM_setValue
+// @grant       GM_registerMenuCommand
 // @match       https://www.bilibili.com/
 // @match       https://www.bilibili.com/video/*
 // @match       https://live.bilibili.com/*
@@ -25,7 +26,7 @@ const addStyle = function addStyle(forceEnable) {
   const id = 'bilibili-dark-theme';
   const style = document.createElement('style');
   style.id = id;
-  style.innerHTML = `
+  style.innerHTML = /*css*/`
 @import url("https://s1.hdslb.com/bfs/static/jinkela/long/laputa-css/dark.css") ${forceEnable ? '' : '(prefers-color-scheme: dark)'};
 
 @media ${forceEnable ? '' : '(prefers-color-scheme: dark)'} {
@@ -55,4 +56,8 @@ document.querySelector('html').style.display = 'none';
 document.addEventListener('DOMContentLoaded', () => {
   addStyle(unsafeWindow.darkThemeForceEnable);
   document.querySelector('html').style.display = '';
+});
+
+GM_registerMenuCommand('Switch Force Enable', () => {
+  unsafeWindow.darkThemeForceEnable = !unsafeWindow.darkThemeForceEnable;
 });

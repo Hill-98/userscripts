@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.5
+// @version     1.1.6
 // @author      Hill-98
 // @license     GPL-3.0
 // @icon        https://www.bilibili.com/favicon.ico
@@ -26,21 +26,27 @@ const API_PREFIX = 'https://api.bilibili.com/x/v2/reply';
 
 const console = Object.create(Object.getPrototypeOf(window.console), Object.getOwnPropertyDescriptors(window.console));
 
-const addLocationToReply = function addLocationToReply(rootid, rpid, userid, location) {
-  const id = rootid === 0 ? rpid : rootid;
+const addLocationToReply = function addLocationToReply(rootId, rpId, userId, location) {
+  const id = rootId === 0 ? rpId : rootId;
   const el = document.createElement('span');
   el.classList.add('reply-location');
   el.textContent = location;
-  const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userid}"]`);
-  const container = document.querySelector(`.reply-wrap[data-id="${rpid}"]`);
+  const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userId}"]`);
+  const container = document.querySelector(`.reply-wrap[data-id="${rpId}"]`);
   if (container) {
     // old page
     const info = container.querySelector('.info');
-    const tags = container.querySelector('.reply-tags');
-    if (tags) {
-      info.insertBefore(el, tags);
+    const time = info.querySelector('.time-location');
+    if (time) {
+      el.style.marginLeft = '-8px';
+      info.insertBefore(el, time.nextSibling);
     } else {
-      info.append(el);
+      const tags = container.querySelector('.reply-tags');
+      if (tags) {
+        info.insertBefore(el, tags);
+      } else {
+        info.append(el);
+      }
     }
   } else {
     // new page
@@ -53,8 +59,14 @@ const addLocationToReply = function addLocationToReply(rootid, rpid, userid, loc
       }
       const info = parentElement.querySelector(isSub ? '.sub-reply-info' : '.reply-info');
       if (info && !info.querySelector('.reply-location')) {
-        el.style.marginLeft = '18px';
-        info.append(el);
+        const time = info.querySelector('.reply-time,.sub-reply-time');
+        el.style.marginRight = '16px';
+        if (time) {
+          el.style.marginLeft = '-8px';
+          info.insertBefore(el, time.nextSibling);
+        } else {
+          info.append(el);
+        }
         break;
       }
     }
@@ -63,13 +75,16 @@ const addLocationToReply = function addLocationToReply(rootid, rpid, userid, loc
 
 const handleReplies = function handleReplies(replies) {
   replies.forEach((reply) => {
-    const control = reply.reply_control;
-    if (control?.location) {
-      try {
-        addLocationToReply(reply.root, reply.rpid, reply.mid, control.location);
-      } catch (ex) {
-        console.error(ex);
-      }
+    const control = reply.reply_control || {};
+    if (control.location) {
+      // 防止在评论元素未准备好之前添加 IP 位置
+      setTimeout(() => {
+        try {
+          addLocationToReply(reply.root, reply.rpid, reply.mid, control.location);
+        } catch (ex) {
+          console.error(ex);
+        }
+      }, 50);
     }
     if (reply.replies) {
       handleReplies(reply.replies);
@@ -84,17 +99,15 @@ const handleResponse = function handleResponse(url, response) {
   try {
     const json = JSON.parse(response);
     if (json.code === 0) {
-      setTimeout(() => {
-        handleReplies(json.data.replies ?? []);
-        handleReplies(json.data.top_replies ?? []);
-      }, 1000);
+      handleReplies(Array.isArray(json.data.replies) ? json.data.replies : []);
+      handleReplies(Array.isArray(json.data.top_replies) ? json.data.top_replies : []);
     }
   } catch (ex) {
     console.error(ex);
   }
 };
 
-const hackResponse = function hackResponse() {
+const interceptResponse = function interceptResponse() {
   if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
     handleResponse(this.responseURL, this.response);
   }
@@ -103,7 +116,7 @@ const hackResponse = function hackResponse() {
 window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest {
   constructor() {
     super();
-    this.addEventListener('readystatechange', hackResponse.bind(this));
+    this.addEventListener('readystatechange', interceptResponse.bind(this));
   }
 };
 
@@ -114,7 +127,7 @@ const jsonpObserver = new MutationObserver((mutationList) => {
         return;
       }
       const u = new URL(node.src);
-      if (u.href.startsWith(API_PREFIX)) {
+      if (u.searchParams.has('callback')) {
         const callbackName = u.searchParams.get('callback');
         const callback = window[callbackName];
         window[callbackName] = function (data) {

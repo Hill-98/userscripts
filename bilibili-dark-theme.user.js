@@ -2,7 +2,7 @@
 // @name        Bilibili dark theme
 // @namespace   Hill98
 // @description Enable dark theme for Bilibili
-// @version     1.0.2
+// @version     1.0.3
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -14,6 +14,7 @@
 // @grant       GM_setValue
 // @grant       GM_registerMenuCommand
 // @match       https://www.bilibili.com/
+// @match       https://www.bilibili.com/opus/*
 // @match       https://www.bilibili.com/video/*
 // @match       https://live.bilibili.com/*
 // @match       https://search.bilibili.com/*

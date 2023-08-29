@@ -2,7 +2,7 @@
 // @name        Bilibili dark theme
 // @namespace   Hill98
 // @description Enable dark theme for Bilibili
-// @version     1.0.1
+// @version     1.0.2
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -17,6 +17,7 @@
 // @match       https://www.bilibili.com/video/*
 // @match       https://live.bilibili.com/*
 // @match       https://search.bilibili.com/*
+// @match       https://t.bilibili.com/*
 // @run-at      document-start
 // ==/UserScript==
 
@@ -30,6 +31,22 @@ const addStyle = function addStyle(forceEnable) {
 @import url("https://s1.hdslb.com/bfs/static/jinkela/long/laputa-css/dark.css") ${forceEnable ? '' : '(prefers-color-scheme: dark)'};
 
 @media ${forceEnable ? '' : '(prefers-color-scheme: dark)'} {
+  #app .bg {
+    background-image: none;
+  }
+
+  #app .bgc {
+    background-color: var(--graph_bg_regular);
+  }
+
+  .bili-dyn-card-goods .bili-dyn-card-goods__wrap, .reference .bili-dyn-card-goods__wrap,
+  .bili-dyn-card-link-common__wrap, .reference .bili-dyn-card-link-common__wrap,
+  .bili-dyn-card-reserve .bili-dyn-card-reserve__card, .reference .bili-dyn-card-reserve__card,
+  .bili-dyn-card-ugc .bili-dyn-card-ugc__wrap, .reference .bili-dyn-card-ugc__wrap,
+  .bili-dyn-upower-lottery__card, .reference .bili-dyn-upower-lottery__card {
+    background-color: var(--graph_bg_thin);
+  }
+
   .reply-tag-item {
     background-color: var(--bg3) !important;
     color: var(--text2) !important;

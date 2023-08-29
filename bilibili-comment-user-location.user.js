@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.6
+// @version     1.1.7
 // @author      Hill-98
 // @license     GPL-3.0
 // @icon        https://www.bilibili.com/favicon.ico
@@ -18,7 +18,7 @@
 // 用户详情页
 // @match       https://space.bilibili.com/*
 // 动态
-// @match       https://t.bilibili.com/
+// @match       https://t.bilibili.com/*
 // @run-at      document-start
 // ==/UserScript==
 
@@ -113,6 +113,14 @@ const interceptResponse = function interceptResponse() {
   }
 };
 
+const $fetch = window.fetch;
+
+window.fetch = async function fetchHacker() {
+  const response = await $fetch(...arguments);
+  handleResponse(response.url, await response.clone().text());
+  return response;
+};
+
 window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest {
   constructor() {
     super();
@@ -120,7 +128,7 @@ window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest
   }
 };
 
-const jsonpObserver = new MutationObserver((mutationList) => {
+const jsonpHacker = new MutationObserver((mutationList) => {
   mutationList.forEach((mutation) => {
     mutation.addedNodes.forEach((node) => {
       if (node.nodeName.toLowerCase() !== 'script' || node.src.trim() === '') {
@@ -140,7 +148,7 @@ const jsonpObserver = new MutationObserver((mutationList) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  jsonpObserver.observe(document.head, {
+  jsonpHacker.observe(document.head, {
     childList: true,
   });
 });

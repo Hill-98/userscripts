@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.9
+// @version     1.1.10
 // @author      Hill-98
 // @license     GPL-3.0
 // @icon        https://www.bilibili.com/favicon.ico
@@ -26,15 +26,27 @@ const API_PREFIX = 'https://api.bilibili.com/x/v2/reply';
 
 const console = Object.create(Object.getPrototypeOf(window.console), Object.getOwnPropertyDescriptors(window.console));
 
-const addLocationToReply = function addLocationToReply(rootId, rpId, userId, location) {
+const addLocationToReply = function addLocationToReply(rootId, rpId, userId, location, count = 1) {
   const id = rootId === 0 ? rpId : rootId;
+  const container = document.querySelector(`.reply-wrap[data-id="${rpId}"]`);
+  const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userId}"]`);
+
+  // 如果评论元素未找到，则在一定时间内重复尝试数次。
+  if (container === null && containers.length === 0) {
+    if (count <= 10) {
+      const args = Array.from(arguments).slice(0, arguments.length);
+      args.push(count + 1);
+      setTimeout(addLocationToReply, 50, ...args);
+    }
+    return;
+  }
+
   const el = document.createElement('span');
   el.classList.add('reply-location');
   el.textContent = location;
-  const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userId}"]`);
-  const container = document.querySelector(`.reply-wrap[data-id="${rpId}"]`);
+
   if (container) {
-    // old page
+    // old page: 直接在对应评论元素插入IP位置
     const info = container.querySelector('.info');
     const time = info.querySelector('.time-location');
     if (time) {
@@ -49,7 +61,7 @@ const addLocationToReply = function addLocationToReply(rootId, rpId, userId, loc
       }
     }
   } else {
-    // new page
+    // new page: 由于无法直接定位评论元素，只能先定位其他有标识符的元素（比如用户头像），然后使用其父元素间接定位评论元素。
     for (let i = 0; i < containers.length; i++) {
       const container = containers[i];
       let parentElement = container.parentElement;
@@ -77,14 +89,11 @@ const handleReplies = function handleReplies(replies) {
   replies.forEach((reply) => {
     const control = reply.reply_control || {};
     if (control.location) {
-      // 防止在评论元素未准备好之前添加 IP 位置
-      setTimeout(() => {
-        try {
-          addLocationToReply(reply.root, reply.rpid, reply.mid, control.location);
-        } catch (ex) {
-          console.error(ex);
-        }
-      }, 50);
+      try {
+        addLocationToReply(reply.root, reply.rpid, reply.mid, control.location);
+      } catch (ex) {
+        console.error(ex);
+      }
     }
     if (reply.replies) {
       handleReplies(reply.replies);
@@ -100,17 +109,13 @@ const handleResponse = async function handleResponse(url, response) {
   try {
     const json = JSON.parse(body);
     if (json.code === 0) {
-      handleReplies(Array.isArray(json.data.replies) ? json.data.replies : []);
-      handleReplies(Array.isArray(json.data.top_replies) ? json.data.top_replies : []);
+      setTimeout(() => {
+        handleReplies(Array.isArray(json.data.replies) ? json.data.replies : []);
+        handleReplies(Array.isArray(json.data.top_replies) ? json.data.top_replies : []);
+      }, 50);
     }
   } catch (ex) {
     console.error(ex);
-  }
-};
-
-const interceptResponse = function interceptResponse() {
-  if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-    handleResponse(this.responseURL, this.response);
   }
 };
 
@@ -118,14 +123,15 @@ const $fetch = window.fetch;
 
 window.fetch = async function fetchHacker() {
   const response = await $fetch(...arguments);
-  await handleResponse(response.url, response);
+  if (response.status === 200) {
+    await handleResponse(response.url, response);
+  }
   return response;
 };
 
-window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest {
-  constructor() {
-    super();
-    this.addEventListener('readystatechange', interceptResponse.bind(this));
+const onReadyStateChange = function onReadyStateChange() {
+  if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+    handleResponse(this.responseURL, this.response);
   }
 };
 
@@ -153,3 +159,10 @@ document.addEventListener('DOMContentLoaded', () => {
     childList: true,
   });
 });
+
+window.XMLHttpRequest = class XMLHttpRequestHacker extends window.XMLHttpRequest {
+  constructor() {
+    super();
+    this.addEventListener('readystatechange', onReadyStateChange.bind(this));
+  }
+};

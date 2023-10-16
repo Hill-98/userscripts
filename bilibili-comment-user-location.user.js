@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.10
+// @version     1.1.11
 // @author      Hill-98
 // @license     GPL-3.0
 // @icon        https://www.bilibili.com/favicon.ico
@@ -123,14 +123,17 @@ const $fetch = window.fetch;
 
 window.fetch = async function fetchHacker() {
   const response = await $fetch(...arguments);
-  if (response.status === 200) {
+  if (response.status === 200 && response.headers.get('content-type')?.includes('application/json')) {
     await handleResponse(response.url, response);
   }
   return response;
 };
 
+/**
+ * @this XMLHttpRequest
+ */
 const onReadyStateChange = function onReadyStateChange() {
-  if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+  if (this.readyState === XMLHttpRequest.DONE && this.status === 200 && this.getAllResponseHeaders().split("\n").find((v) => v.toLowerCase().includes('content-type: application/json'))) {
     handleResponse(this.responseURL, this.response);
   }
 };

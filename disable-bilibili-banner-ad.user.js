@@ -2,7 +2,7 @@
 // @name        Disable BiliBili banner AD
 // @namespace   Hill98
 // @description Disable BiliBili banner advertise
-// @version     1.1.1
+// @version     1.1.2
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.bilibili.com/favicon.ico
@@ -31,24 +31,21 @@ class FakeString extends String {
   }
 }
 
-Object.defineProperty(window, '__INITIAL_DATA__', {
-  get() {
-    return __INITIAL_DATA__;
-  },
-  set(value) {
-    __INITIAL_DATA__ = value.map((item) => {
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelector('a.inner-logo')?.addEventListener('dblclick', () => {
+    sessionStorage.setItem(DISABLE_HANDLE_KEY, 'true');
+    location.reload();
+  });
+});
+
+document.addEventListener('readystatechange', () => {
+  if (document.readyState === 'interactive') {
+    window.__INITIAL_DATA__ = window.__INITIAL_DATA__.map((item) => {
       const request = item.request;
       if (request.url.includes('//api.bilibili.com/x/web-show/page/header')) {
         item.response.litpic = new FakeString('');
       }
       return item;
     });
-  },
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.querySelector('a.inner-logo')?.addEventListener('dblclick', () => {
-    sessionStorage.setItem(DISABLE_HANDLE_KEY, 'true');
-    location.reload();
-  });
+  }
 });

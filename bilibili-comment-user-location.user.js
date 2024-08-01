@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.1.11
+// @version     1.2.0
 // @author      Hill-98
 // @license     GPL-3.0
 // @icon        https://www.bilibili.com/favicon.ico
@@ -30,9 +30,10 @@ const addLocationToReply = function addLocationToReply(rootId, rpId, userId, loc
   const id = rootId === 0 ? rpId : rootId;
   const container = document.querySelector(`.reply-wrap[data-id="${rpId}"]`);
   const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userId}"]`);
+  const comments = document.querySelector('#comment bili-comments')?.shadowRoot?.querySelector('#contents #feed')?.querySelectorAll('bili-comment-thread-renderer');
 
   // 如果评论元素未找到，则在一定时间内重复尝试数次。
-  if (container === null && containers.length === 0) {
+  if (container === null && containers.length === 0 && (!comments || comments.length === 0)) {
     if (count <= 10) {
       const args = Array.from(arguments).slice(0, arguments.length);
       args.push(count + 1);
@@ -45,8 +46,8 @@ const addLocationToReply = function addLocationToReply(rootId, rpId, userId, loc
   el.classList.add('reply-location');
   el.textContent = location;
 
+  // old old page: 直接在对应评论元素插入IP位置
   if (container) {
-    // old page: 直接在对应评论元素插入IP位置
     const info = container.querySelector('.info');
     const time = info.querySelector('.time-location');
     if (time) {
@@ -60,8 +61,10 @@ const addLocationToReply = function addLocationToReply(rootId, rpId, userId, loc
         info.append(el);
       }
     }
-  } else {
-    // new page: 由于无法直接定位评论元素，只能先定位其他有标识符的元素（比如用户头像），然后使用其父元素间接定位评论元素。
+  }
+
+  // new page: 由于无法直接定位评论元素，只能先定位其他有标识符的元素（比如用户头像），然后使用其父元素间接定位评论元素。
+  if (containers) {
     for (let i = 0; i < containers.length; i++) {
       const container = containers[i];
       let parentElement = container.parentElement;
@@ -82,6 +85,29 @@ const addLocationToReply = function addLocationToReply(rootId, rpId, userId, loc
         break;
       }
     }
+  }
+
+  // new video page: 读取自定义元素上面的属性然后插入自定义元素。(这个可以放在单独的监听器里，但是我懒。)
+  if (comments) {
+    el.style.marginLeft = '16px';
+    comments.forEach((comment) => {
+      const bComments = [
+        comment,
+        ...(comment.shadowRoot?.querySelector('#replies bili-comment-replies-renderer')?.shadowRoot?.querySelectorAll('#expander-contents bili-comment-reply-renderer') ?? [])
+      ]
+      bComments.forEach((bContent) => {
+        const action = bContent.tagName.toLowerCase() === 'bili-comment-thread-renderer'
+          ? bContent.shadowRoot?.querySelector('#comment')?.shadowRoot?.querySelector('#footer bili-comment-action-buttons-renderer')?.shadowRoot
+          : bContent.shadowRoot?.querySelector('#footer bili-comment-action-buttons-renderer')?.shadowRoot;
+        if (action) {
+          const span = action.querySelector('.reply-location') ?? document.createElement('span');
+          span.classList.add('reply-location');
+          span.style.marginLeft = '16px';
+          span.textContent = bContent.__data.reply_control.location;
+          action.querySelector('#pubdate')?.append(span);
+        }
+      })
+    })
   }
 };
 

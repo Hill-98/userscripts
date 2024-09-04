@@ -2,7 +2,7 @@
 // @name        Bilibili Comment User Location
 // @namespace   Hill98
 // @description 哔哩哔哩网页版评论区显示用户 IP 归属地
-// @version     1.2.0
+// @version     1.2.1
 // @author      Hill-98
 // @license     GPL-3.0
 // @icon        https://www.bilibili.com/favicon.ico
@@ -30,7 +30,7 @@ const addLocationToReply = function addLocationToReply(rootId, rpId, userId, loc
   const id = rootId === 0 ? rpId : rootId;
   const container = document.querySelector(`.reply-wrap[data-id="${rpId}"]`);
   const containers = document.querySelectorAll(`[data-root-reply-id="${id}"][data-user-id="${userId}"]`);
-  const comments = document.querySelector('#comment bili-comments')?.shadowRoot?.querySelector('#contents #feed')?.querySelectorAll('bili-comment-thread-renderer');
+  const comments = document.querySelector('bili-comments')?.shadowRoot.querySelectorAll('bili-comment-thread-renderer');
 
   // 如果评论元素未找到，则在一定时间内重复尝试数次。
   if (container === null && containers.length === 0 && (!comments || comments.length === 0)) {
@@ -99,6 +99,7 @@ const addLocationToReply = function addLocationToReply(rootId, rpId, userId, loc
         const action = bContent.tagName.toLowerCase() === 'bili-comment-thread-renderer'
           ? bContent.shadowRoot?.querySelector('#comment')?.shadowRoot?.querySelector('#footer bili-comment-action-buttons-renderer')?.shadowRoot
           : bContent.shadowRoot?.querySelector('#footer bili-comment-action-buttons-renderer')?.shadowRoot;
+
         if (action) {
           const span = action.querySelector('.reply-location') ?? document.createElement('span');
           span.classList.add('reply-location');

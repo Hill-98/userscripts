@@ -2,7 +2,7 @@
 // @name        Fuck QQ URL
 // @namespace   Hill98
 // @description Skip Unsafe Link Warning in Desktop QQ Client
-// @version     1.2.1
+// @version     1.2.2
 // @author      Hill-98
 // @license     MIT
 // @icon        https://qzonestyle.gtimg.cn/qzone/qzact/act/external/tiqq/logo.png
@@ -11,6 +11,7 @@
 // @supportURL  https://github.com/Hill-98/userscripts/issues
 // @updateURL   https://github.com/Hill-98/userscripts/raw/main/fuck-qq-url.user.js
 // @grant       none
+// @match       https://c.pc.qq.com/ios.html?*
 // @match       https://c.pc.qq.com/middlem.html?*
 // @match       https://c.pc.qq.com/pc.html?*
 // ==/UserScript==

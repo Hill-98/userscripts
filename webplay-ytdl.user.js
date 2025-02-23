@@ -2,7 +2,7 @@
 // @name        WebPlay for ytdl
 // @namespace   Hill98
 // @description Show WebPlay play button on some ytdl protocol supported pages
-// @version     1.2.0
+// @version     1.2.1
 // @author      Hill-98
 // @license     MIT
 // @icon        https://www.google.com/s2/favicons?domain=mpv.io
@@ -2207,7 +2207,7 @@ playButton.addEventListener('click', () => {
     if (video) {
       params.append('start', video.currentTime);
     }
-    location.assign('webplay:?' + params.toString());
+    location.assign('webplay://open/?' + params.toString());
     video.pause();
   }, 300);
 });
